@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Personas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/vista.css' %}">
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Barra superior -->
+        <div class="top-bar">
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Buscar persona..." autocomplete="off">
+                    <div id="suggestions" class="suggestions-box"></div>
+                </div>
+            </div>
+
+            <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
+                {% csrf_token %}
+            </form>
+
+            <a href="#" class="btn-logout-circle" title="Cerrar Sesión"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </a>
+        </div>
+
+        <!-- Mensajes Django -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }} django-message">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Header -->
+        <div class="header">
+            <p class="header-eyebrow">Directorio</p>
+            <h1>Lista de <span>Personas</span></h1>
+            <div class="header-line"></div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="actions">
+            <a href="{% url 'nueva_persona' %}" class="btn btn-add">+ Agregar perfil</a>
+            <a href="{% url 'mostrar_domicilios' %}" class="btn btn-manage">⚙ Gestionar direcciones</a>
+        </div>
+
+        <!-- Lista de personas -->
+        <div class="persona-list">
+            {% for persona in personas %}
+            <div class="persona">
+                <div class="avatar">
+                    {{ persona.nombre|slice:":1" }}{{ persona.apellido|slice:":1" }}
+                </div>
+
+                <div class="info">
+                    <div class="nombre">{{ persona.nombre_completo }}</div>
+                    <div class="meta">
+                        <span class="email">{{ persona.email }}</span>
+                        <span class="id-badge">#{{ persona.id }}</span>
+                    </div>
+                </div>
+
+                <div class="direccion">
+                    {% if persona.domicilio %}
+                    <div class="dir-line">{{ persona.domicilio.calle }}</div>
+                    <div class="dir-line">{{ persona.domicilio.no_calle }}</div>
+                    <div class="dir-line">{{ persona.domicilio.pais }}</div>
+                    {% else %}
+                    <span class="sin-dir">Sin dirección</span>
+                    {% endif %}
+                </div>
+
+                <a class="btn-info" href="{% url 'detalle_persona' persona.id %}">
+                    Ver más <span class="btn-arrow">→</span>
+                </a>
+            </div>
+            {% empty %}
+            <div class="empty">
+                <div class="empty-icon">◎</div>
+                <p class="empty-text">No hay personas registradas</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% if personas.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if personas.has_previous %}
+            <a href="?page={{ personas.previous_page_number }}" class="page-btn">← Anterior</a>
+            {% else %}
+            <span class="page-btn disabled">← Anterior</span>
+            {% endif %}
+
+            <span class="page-info">
+                Página {{ personas.number }} de {{ personas.paginator.num_pages }}
+            </span>
+
+            {% if personas.has_next %}
+            <a href="?page={{ personas.next_page_number }}" class="page-btn">Siguiente →</a>
+            {% else %}
+            <span class="page-btn disabled">Siguiente →</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div><!-- /container -->
+
+    <script>
+        // Auto-ocultar mensajes Django después de 3 segundos
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.django-message');
+            alerts.forEach(function (alert) {
+                setTimeout(function () {
+                    alert.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                    alert.style.opacity = "0";
+                    alert.style.transform = "translateY(-10px)";
+                    setTimeout(() => alert.remove(), 600);
+                }, 3000);
+            });
+        });
+    </script>
+
+    <script>
+        const input = document.getElementById('search-input');
+        const suggestionsBox = document.getElementById('suggestions');
+
+        input.addEventListener('input', async () => {
+            const query = input.value;
+            if (query.length < 1) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+            try {
+                const response = await fetch(`/personas/buscar/?term=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                if (data.length > 0) {
+                    suggestionsBox.innerHTML = '';
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = item.nombre;
+                        div.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.location.href = `/personas/${item.id}/editar/`;
+                        });
+                        suggestionsBox.appendChild(div);
+                    });
+                    suggestionsBox.style.display = 'block';
+                } else {
+                    suggestionsBox.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Cierra la caja solo si se hace clic fuera del buscador
+        document.addEventListener('mousedown', (e) => {
+            if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

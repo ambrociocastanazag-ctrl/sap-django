@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Domicilios</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/vista.css' %}">
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Barra superior -->
+        <div class="top-bar">
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Buscar domicilio..." autocomplete="off">
+                    <div id="suggestions" class="suggestions-box"></div>
+                </div>
+            </div>
+
+            <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
+                {% csrf_token %}
+            </form>
+
+            <a href="#" class="btn-logout-circle" title="Cerrar Sesión"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </a>
+        </div>
+
+        <!-- Mensajes Django -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.extra_tags }} django-message">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Header -->
+        <div class="header">
+            <p class="header-eyebrow">Directorio</p>
+            <h1>Lista de <span>Domicilios</span></h1>
+            <div class="header-line"></div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="actions">
+            <a href="{% url 'nuevo_domicilio' %}" class="btn btn-add">+ Agregar domicilio</a>
+            <a href="{% url 'mostrar_personas' %}" class="btn btn-manage">⚙ Gestionar personas</a>
+        </div>
+
+        <!-- Lista de domicilios -->
+        <div class="domicilio-list">
+            {% for domicilio in domicilios %}
+            <div class="domicilio">
+                <div class="direccion-linea">
+                    <span class="dir-main">{{ domicilio.calle }} #{{ domicilio.no_calle }}</span>
+                    <span class="dir-sep">•</span>
+                    <span class="dir-pais">{{ domicilio.pais }}</span>
+                    <span class="dir-sep">•</span>
+                    <span class="id-badge dir-id">ID #{{ domicilio.id }}</span>
+                </div>
+                <a class="btn-edit" href="{% url 'editar_domicilio' domicilio.id %}">Editar →</a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if domicilios.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if domicilios.has_previous %}
+            <a href="?page={{ domicilios.previous_page_number }}" class="page-btn">← Anterior</a>
+            {% else %}
+            <span class="page-btn disabled">← Anterior</span>
+            {% endif %}
+
+            <span class="page-info">
+                Página {{ domicilios.number }} de {{ domicilios.paginator.num_pages }}
+            </span>
+
+            {% if domicilios.has_next %}
+            <a href="?page={{ domicilios.next_page_number }}" class="page-btn">Siguiente →</a>
+            {% else %}
+            <span class="page-btn disabled">Siguiente →</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div><!-- /container -->
+    <script>
+        // Auto-ocultar mensajes Django después de 3 segundos
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.django-message');
+            alerts.forEach(function (alert) {
+                setTimeout(function () {
+                    alert.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                    alert.style.opacity = "0";
+                    alert.style.transform = "translateY(-10px)";
+                    setTimeout(() => alert.remove(), 600);
+                }, 3000);
+            });
+        });
+    </script>
+
+    <script>
+        const input = document.getElementById('search-input');
+        const suggestionsBox = document.getElementById('suggestions');
+
+        input.addEventListener('input', async () => {
+            const query = input.value;
+            if (query.length < 1) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+            try {
+                const response = await fetch(`/personas/domicilios/buscar/?term=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                if (data.length > 0) {
+                    suggestionsBox.innerHTML = '';
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = item.calle;
+                        div.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.location.href = `/personas/domicilios/${item.id}/editar/`;
+                        });
+                        suggestionsBox.appendChild(div);
+                    });
+                    suggestionsBox.style.display = 'block';
+                } else {
+                    suggestionsBox.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Cierra la caja solo si se hace clic fuera del buscador
+        document.addEventListener('mousedown', (e) => {
+            if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

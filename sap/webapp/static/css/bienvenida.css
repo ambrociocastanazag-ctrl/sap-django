@@ -1,0 +1,116 @@
+/* Base */
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(270deg, #151820, #5ee8b5c4, #151820);
+    background-size: 600% 600%;
+    animation: move 10s ease infinite;
+    color: #f0ede8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+/* Container */
+.container {
+    width: 100%;
+    max-width: 520px;
+    padding: 20px;
+}
+
+/* Card */
+.card {
+    background: #151820;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 40px 30px;
+    text-align: center;
+    animation: fadeUp 0.4s ease;
+}
+
+/* Animación */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Texto */
+.eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #5ee8b5;
+    margin-bottom: 10px;
+}
+
+.title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: #8a8fa0;
+    margin-bottom: 25px;
+}
+
+/* Contador */
+.counter {
+    font-size: 0.85rem;
+    margin-bottom: 30px;
+    color: #5ee8b5;
+    background: rgba(94,232,181,0.08);
+    border: 1px solid rgba(94,232,181,0.2);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+/* Botones */
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Botón base */
+.btn {
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+/* Usuarios */
+.btn-users {
+    background: rgba(94,232,181,0.1);
+    border: 1px solid rgba(94,232,181,0.25);
+    color: #5ee8b5;
+}
+
+.btn-users:hover {
+    background: rgba(94,232,181,0.2);
+    border-color: rgba(94,232,181,0.5);
+    color: white;
+}
+
+/* Domicilios */
+.btn-home {
+    background: rgba(135, 164, 19, 0.26);
+    border: 1px solid rgba(125, 188, 23, 0.345);
+    color: #f0ede8;
+}
+
+.btn-home:hover {
+    background: rgba(110, 128, 8, 0.639);
+    border-color: rgb(110, 128, 8);
+}

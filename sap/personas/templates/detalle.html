@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persona {{ persona.id }} — {{ persona.nombre_completo }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/detalle.css' %}">
+</head>
+<body>
+<div class="page">
+
+    <a class="back" href="javascript:history.back()">
+        <span class="back-arrow">←</span> Volver al directorio
+    </a>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="avatar-wrap">
+            <div class="avatar">
+                {{ persona.nombre|slice:":1" }}{{ persona.apellido|slice:":1" }}
+            </div>
+            <span class="id-pill">#{{ persona.id }}</span>
+        </div>
+        <div class="hero-text">
+            <p class="eyebrow">Perfil de persona</p>
+            <h1 class="hero-name">{{ persona.nombre_completo }}</h1>
+            <p class="hero-email">{{ persona.email }}</p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Info cards -->
+    <p class="section-label">Información general</p>
+    <div class="info-grid">
+        <div class="info-card">
+            <p class="info-card-label">Nombre</p>
+            <p class="info-card-value">{{ persona.nombre }}</p>
+        </div>
+        <div class="info-card">
+            <p class="info-card-label">Apellido</p>
+            <p class="info-card-value">{{ persona.apellido }}</p>
+        </div>
+        <div class="info-card">
+            <p class="info-card-label">Correo electrónico</p>
+            <p class="info-card-value">{{ persona.email }}</p>
+        </div>
+        <div class="info-card">
+            <p class="info-card-label">ID del registro</p>
+            <p class="info-card-value accent">#{{ persona.id }}</p>
+        </div>
+    </div>
+
+    <!-- Address -->
+    <p class="section-label">Domicilio</p>
+    <div class="address-block">
+        {% if persona.domicilio %}
+            <div class="address-row">
+                <span class="address-key">Calle</span>
+                <span class="address-val">{{ persona.domicilio.calle }}</span>
+            </div>
+            <div class="address-row">
+                <span class="address-key">Número</span>
+                <span class="address-val">{{ persona.domicilio.no_calle }}</span>
+            </div>
+            <div class="address-row">
+                <span class="address-key">País</span>
+                <span class="address-val">{{ persona.domicilio.pais }}</span>
+            </div>
+        {% else %}
+            <div class="no-address">Esta persona no tiene dirección registrada</div>
+        {% endif %}
+    </div>
+
+<!-- Actions -->
+<div class="actions">
+    <a class="btn btn-primary" href="javascript:history.back()">← Volver</a>
+
+    <a class="btn btn-ghost" href="{% url 'editar_persona' persona.id %}">
+        Editar perfil
+    </a>
+
+    <!-- BOTÓN QUE ABRE MODAL (NO ENVÍA FORM) -->
+    <button type="button" class="btn btn-danger" onclick="abrirModal()">
+        Eliminar perfil
+    </button>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <p>¿Seguro que deseas eliminar este usuario?</p>
+
+        <div class="modal-actions">
+            <!-- Cancelar -->
+            <button type="button" class="btn btn-primary" onclick="cerrarModal()">
+                Cancelar
+            </button>
+
+            <!-- Confirmar eliminación -->
+            <form action="{% url 'eliminar_persona' persona.id %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    Sí, eliminar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function abrirModal() {
+    document.getElementById('modal').style.display = 'flex';
+}
+
+function cerrarModal() {
+    document.getElementById('modal').style.display = 'none';
+}
+</script>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Persona</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'css/editar.css' %}">
+</head>
+
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2 class="title">Editar Persona</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {% for campo in forma_persona %}
+                <div class="form-group">
+                    <label class="label">{{ campo.label }}</label>
+                    
+                    {{ campo }}
+                    
+                    <div class="error">
+                        {{ campo.errors }}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn">
+                Guardar
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
